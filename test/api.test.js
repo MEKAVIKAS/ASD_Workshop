@@ -94,3 +94,63 @@ test('POST rejects a product with a missing price', async () => {
     assert.equal(response.status, 400)
     assert.equal(body.message, 'name and price are required')
 })
+
+test('product CRUD endpoints complete a successful lifecycle', async () => {
+    let productId
+
+    try {
+        const createResponse = await fetch(`${baseUrl}/products`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: 'CRUD test product', price: 12.5 })
+        })
+        const createdProduct = await createResponse.json()
+        productId = createdProduct.id
+
+        assert.equal(createResponse.status, 201)
+        assert.equal(createdProduct.name, 'CRUD test product')
+        assert.equal(createdProduct.price, 12.5)
+        assert.ok(Number.isInteger(productId))
+
+        const patchResponse = await fetch(`${baseUrl}/products/${productId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ price: 14.5 })
+        })
+        const patchedProduct = await patchResponse.json()
+
+        assert.equal(patchResponse.status, 200)
+        assert.equal(patchedProduct.name, 'CRUD test product')
+        assert.equal(patchedProduct.price, 14.5)
+
+        const replaceResponse = await fetch(`${baseUrl}/products/${productId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: 'Replaced test product', price: 20 })
+        })
+        const replacedProduct = await replaceResponse.json()
+
+        assert.equal(replaceResponse.status, 200)
+        assert.equal(replacedProduct.id, productId)
+        assert.equal(replacedProduct.name, 'Replaced test product')
+        assert.equal(replacedProduct.price, 20)
+
+        const deleteResponse = await fetch(`${baseUrl}/products/${productId}`, {
+            method: 'DELETE'
+        })
+        const deletion = await deleteResponse.json()
+
+        assert.equal(deleteResponse.status, 200)
+        assert.equal(deletion.message, 'Product deleted')
+        assert.equal(deletion.product.id, productId)
+        productId = undefined
+    } finally {
+        if (productId !== undefined) {
+            const cleanupResponse = await fetch(`${baseUrl}/products/${productId}`, {
+                method: 'DELETE'
+            })
+
+            assert.ok([200, 404].includes(cleanupResponse.status))
+        }
+    }
+})
