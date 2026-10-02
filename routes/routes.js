@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 
-const {cache, cacheMiddleware} = require('../middleware/cache_middleware.js')
+const { cacheMiddleware } = require('../middleware/cache_middleware.js')
 
 const {
     getAll,
