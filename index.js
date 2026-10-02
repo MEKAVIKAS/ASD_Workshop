@@ -6,6 +6,10 @@ const app = express()
 app.use(express.json())
 app.use('/products', productRoutes)
 
+app.use((req, res) => {
+    res.status(404).json({ message: 'Route not found' })
+})
+
 app.use((err, req, res, next) => {
     if (err.type === 'entity.parse.failed') {
         return res.status(400).json({ message: 'Invalid JSON body' })

@@ -39,6 +39,14 @@ test('GET /products returns a product list', async () => {
     assert.ok(products.some(product => product.id === 1))
 })
 
+test('unknown routes return a JSON 404 response', async () => {
+    const response = await fetch(`${baseUrl}/no-such-route`)
+    const body = await response.json()
+
+    assert.equal(response.status, 404)
+    assert.equal(body.message, 'Route not found')
+})
+
 test('GET /products/:id returns the matching product', async () => {
     const response = await fetch(`${baseUrl}/products/1`)
     const product = await response.json()
